@@ -18,7 +18,6 @@ public class SongDtoConverter {
 
     public GetSongDto songToGetSongDto(Song s){
         String artistName;
-        ObjectMapper mapper = new ObjectMapper();
 
         if(s.getArtist() == null){
             artistName = "No existe el artista";

@@ -1,12 +1,15 @@
 package com.salesianostriana.dam.trianafy.controllers;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.salesianostriana.dam.trianafy.dto.songDto.CreateSongDto;
 import com.salesianostriana.dam.trianafy.dto.songDto.GetSongDto;
+import com.salesianostriana.dam.trianafy.dto.songDto.SongDto;
 import com.salesianostriana.dam.trianafy.dto.songDto.SongDtoConverter;
 import com.salesianostriana.dam.trianafy.model.Artist;
 import com.salesianostriana.dam.trianafy.model.Song;
 import com.salesianostriana.dam.trianafy.repos.ArtistRepository;
 import com.salesianostriana.dam.trianafy.repos.SongRepository;
+import com.salesianostriana.dam.trianafy.views.SongViews;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -65,14 +68,15 @@ public class SongController {
                     description = "No se ha encontrado ninguna cancion",
                     content = @Content),
     })
-    @GetMapping("/song/")
-    public ResponseEntity <List<GetSongDto>> getAllSongs(){
+
+    @GetMapping("/song/") @JsonView(SongViews.SongDto.class)
+    public ResponseEntity <List<SongDto>> getAllSongs(){
         List<Song> data = repo.findAll();
         if(data.isEmpty()){
             return ResponseEntity.notFound().build();
         }else{
-            List<GetSongDto> result = data.stream()
-                    .map(GetSongDto::of)
+            List<SongDto> result = data.stream()
+                    .map(SongDto::of)
                     .collect(Collectors.toList());
             return ResponseEntity
                     .ok()
@@ -107,10 +111,10 @@ public class SongController {
                     description = "No se ha encontrado ninguna cancion",
                     content = @Content),
     })
-    @GetMapping("/song/{id}")
-    public ResponseEntity<Song> getSong(@Parameter(description = " ID de la cancion a consultar")@PathVariable Long id){
+    @GetMapping("/song/{id}") @JsonView(SongViews.SongDto.class)
+    public ResponseEntity<SongDto> getSong(@Parameter(description = " ID de la cancion a consultar")@PathVariable Long id){
         return ResponseEntity
-                .of(repo.findById(id));
+                .of(repo.findById(id).map(SongDto::of));
     }
 
     @Operation(summary = "Añade una nueva cancion")
@@ -133,8 +137,8 @@ public class SongController {
                     description = "Ha habido un error en los datos recibidos",
                     content = @Content),
     })
-    @PostMapping("/song/")
-    public ResponseEntity<GetSongDto> addSong(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = " Objeto Dto necesario para la creacion de la cancion") @RequestBody CreateSongDto dto){
+    @PostMapping("/song/") @JsonView(SongViews.GetSongDto.class)
+    public ResponseEntity<SongDto> addSong(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = " Objeto Dto necesario para la creacion de la cancion") @RequestBody CreateSongDto dto){
         if(dto.getArtistId() ==null || dto.getTitle()== null || dto.getAlbum() == null || dto.getYear()== null){
             return ResponseEntity.badRequest().build();
         }
@@ -146,7 +150,7 @@ public class SongController {
         newSong.setArtist(artist);
         repo.save(newSong);
 
-        GetSongDto getSongDto = dtoConverter.songToGetSongDto(newSong);
+        SongDto getSongDto = SongDto.of(newSong);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -178,8 +182,8 @@ public class SongController {
                     content = @Content),
 
     })
-    @PutMapping("/song/{id}")
-    public ResponseEntity<GetSongDto> editSong(@Parameter(description = " ID de la cancion a editar")@PathVariable Long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(description = " Objeto Dto necesario para la edicion de la cancion") @RequestBody CreateSongDto dto){
+    @PutMapping("/song/{id}")@JsonView(SongViews.GetSongDto.class)
+    public ResponseEntity<SongDto> editSong(@Parameter(description = " ID de la cancion a editar")@PathVariable Long id, @io.swagger.v3.oas.annotations.parameters.RequestBody(description = " Objeto Dto necesario para la edicion de la cancion") @RequestBody CreateSongDto dto){
         if(dto.getArtistId() ==null || dto.getTitle()== null || dto.getAlbum() == null || dto.getYear()== null){
             return ResponseEntity.badRequest().build();
         }
@@ -197,7 +201,7 @@ public class SongController {
          return ResponseEntity.notFound().build();
         }
 
-        GetSongDto getSongDto = dtoConverter.songToGetSongDto(s);
+        SongDto getSongDto = SongDto.of(s);
 
         return ResponseEntity.ok(getSongDto);
     }

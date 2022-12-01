@@ -2,6 +2,7 @@ package com.salesianostriana.dam.trianafy.dto.songDto;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.salesianostriana.dam.trianafy.model.Song;
+import com.salesianostriana.dam.trianafy.views.SongViews;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,19 +11,10 @@ import lombok.NoArgsConstructor;
 @Data @NoArgsConstructor @AllArgsConstructor
 @Builder
 public class GetSongDto {
-    @JsonView(Views.Public.class)
     private Long id;
-
-    @JsonView(Views.Public.class)
     private String title;
-
-    @JsonView(Views.Internal.class)
     private String album;
-
-    @JsonView(Views.Internal.class)
     private String year;
-
-    @JsonView(Views.Internal.class)
     private String artist;
 
     public static GetSongDto of (Song s){
